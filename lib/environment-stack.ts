@@ -14,8 +14,6 @@ export class EnvironmentStack extends Stack {
     super(scope, id, props);
 
     const bucket = new s3.Bucket(this, 'Step1Bucket', {
-      // パブリックアクセスを許可する
-      publicReadAccess: true,
       // 静的ウェブホスティングを有効化する
       websiteIndexDocument: 'index.html',
       // ACLを通じたアクセスをブロックしつつ、バケットポリシーを通じたアクセスを許可する
