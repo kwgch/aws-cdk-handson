@@ -70,7 +70,7 @@ export class EnvironmentStack extends Stack {
       resources: [`${bucket.bucketArn}/*`],
     });
     contentsBucketPolicy.addCondition('StringEquals', {
-      'AWS:SourceArn': `arn:aws:cloudfront::${props?.env?.account}:distribution/${distribution.distributionId}`
+      'AWS:SourceArn': `arn:aws:cloudfront::${props?.env?.account ?? process.env.AWS_ACCOUNTID}:distribution/${distribution.distributionId}`
     })
     bucket.addToResourcePolicy(contentsBucketPolicy);
   }
