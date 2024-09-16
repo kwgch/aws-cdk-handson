@@ -14,10 +14,8 @@ export class EnvironmentStack extends Stack {
     super(scope, id, props);
 
     const bucket = new s3.Bucket(this, 'Step1Bucket', {
-      // 静的ウェブホスティングを有効化する
-      websiteIndexDocument: 'index.html',
-      // ACLを通じたアクセスをブロックしつつ、バケットポリシーを通じたアクセスを許可する
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
+      // パブリックアクセスは遮断
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       bucketName: `${date}-${name}-step1`,
     });
 
@@ -25,17 +23,5 @@ export class EnvironmentStack extends Stack {
       sources: [s3deploy.Source.asset(path.join('./contents.zip'))], 
       destinationBucket: bucket, 
     });
-
-    // 読み取り専用のバケットポリシーを作成する
-    const allowPublicAccessBucketPolicy = new PolicyStatement({
-      sid: 'Allow Public Access',
-      effect: Effect.ALLOW,
-      actions: ['s3:GetObject'],
-      principals: [new ArnPrincipal('*')],  //難しめ
-      resources: [bucket.bucketArn + '/*'], //ちょっと難しめ
-    });
-
-    // バケットポリシーをS3バケットに適用
-    bucket.addToResourcePolicy(allowPublicAccessBucketPolicy);
   }
 }
