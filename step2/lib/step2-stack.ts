@@ -1,26 +1,29 @@
 import * as cdk from 'aws-cdk-lib';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 export class Step2Stack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // DynamoDB resource -------------------
-
-    new dynamodb.Table(this, 'Sample-table', { // 'Sample-table'はStack内で一意
-      tableName: "TrainingApplicant", // テーブル名の定義
-      partitionKey: { //パーティションキーの定義
-        name: 'training',
-        type: dynamodb.AttributeType.STRING, // typeはあとNumberとbinary
-      },
-      sortKey: { // ソートキーの定義
-        name: 'email',
-        type: dynamodb.AttributeType.STRING,
-      },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,  // オンデマンド請求
-      pointInTimeRecovery: true, // PITRを有効化
-      timeToLiveAttribute: 'expired', // TTLの設定
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // cdk destroyでDB削除可
+    // Create a DynamoDB table
+    const table = new dynamodb.Table(this, 'MyTable', {
+      partitionKey: { name: 'training', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'email', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
+
+    // Create a Lambda function
+    const lambdaFunction = new lambda.Function(this, 'MyLambdaFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('lambda'),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+
+    table.grantWriteData(lambdaFunction);
   }
 }
